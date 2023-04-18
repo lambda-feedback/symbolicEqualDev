@@ -4,6 +4,8 @@ FROM rabidsheep55/python-base-eval-layer
 
 WORKDIR /app
 
+RUN yum install -y git
+
 # Copy and install any packages/modules needed for your evaluation script.
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
