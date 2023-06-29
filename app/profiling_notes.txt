@@ -1,8 +1,0 @@
-0:  ~7.1 s
-1:  ~3.9 s # Early on numerical evaluation to avoid is_constant
-2:  ~0.9 s # Removed simplification from response_simplify
-3: ~23.8 s # Changed to testing worst case scenario (incorrect response)
-4:  ~4.1 s # Removed all but one equality check
-5:  ~1.0 s # Added numerical sampling check
-
- Evaluation-Function-Boilerplate
