@@ -154,6 +154,9 @@ def preview_function(response: str, params: Params) -> Result:
             sympy_out = sympy_out[0]
         sympy_out = str(sympy_out)
 
+        if not params.get("is_latex", False):
+            sympy_out = response
+
         if len(latex_out) > 1:
             latex_out = "\\left\\{"+",~".join(latex_out)+"\\right\\}"
         else:
