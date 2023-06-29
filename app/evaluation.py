@@ -66,7 +66,7 @@ def evaluation_function(response, answer, params, include_test_data=False) -> di
         else:
             response_latex = interp
         eval_response.latex = response_latex
-        return eval_response
+        return eval_response.serialise(include_test_data)
 
 
 def check_equality(response, answer, params, eval_response) -> dict:
