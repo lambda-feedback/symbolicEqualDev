@@ -134,3 +134,5 @@ app/perf_test_3.prof
 app/perf_test_4.prof
 app/perf_test.prof
 app/perf_test_5.prof
+*.wpr
+*.wpu

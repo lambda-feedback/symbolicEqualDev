@@ -165,6 +165,13 @@ class TestEvaluationFunction():
         result = evaluation_function(response, answer, params)
         assert result["is_correct"] is True
 
+    def test_expression_with_assumption(self):
+        answer = "sqrt(a/b)"
+        response = "sqrt(a/b)"
+        params = {"strict_syntax": False, "symbol_assumptions": "('a','positive') ('b','positive')"}
+        result = evaluation_function(response, answer, params)
+        assert result["is_correct"] is True
+
     @pytest.mark.parametrize(
         "response,answer",
         generate_input_variations(

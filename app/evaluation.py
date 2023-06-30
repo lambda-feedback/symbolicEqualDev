@@ -29,7 +29,7 @@ def evaluation_function(response, answer, params, include_test_data=False) -> di
     answer_list = create_expression_set(answer, params)
 
     if len(response_list) == 1 and len(answer_list) == 1:
-        return check_equality(response, answer, params, eval_response)
+        eval_response = check_equality(response, answer, params, eval_response)
     else:
         matches = {"responses": [False]*len(response_list), "answers": [False]*len(answer_list)}
         interp = []
@@ -66,7 +66,8 @@ def evaluation_function(response, answer, params, include_test_data=False) -> di
         else:
             response_latex = interp
         eval_response.latex = response_latex
-        return eval_response.serialise(include_test_data)
+
+    return eval_response.serialise(include_test_data)
 
 
 def check_equality(response, answer, params, eval_response) -> dict:
