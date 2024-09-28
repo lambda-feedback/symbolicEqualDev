@@ -127,12 +127,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-app/perf_test_0.prof
-app/perf_test_1.prof
-app/perf_test_2.prof
-app/perf_test_3.prof
-app/perf_test_4.prof
-app/perf_test.prof
-app/perf_test_5.prof
+
+# Swap files
+.*.swp
+app/benchmark.py
+*.prof
 *.wpr
 *.wpu
+app/profiling_examples.py

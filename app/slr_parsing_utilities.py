@@ -19,6 +19,9 @@ def catch_undefined(label, content, original, start, end):
 
 
 # Syntax tree building utilities
+def proceed(production, output, tag_handler):
+    return output
+
 def package(production, output, tag_handler):
     label = production[0].label
     handle = production[1]
@@ -38,10 +41,24 @@ def append(production, output, tag_handler):
     return output
 
 
+def append_last(production, output, tag_handler):
+    handle = production[1]
+    last = output[-1]
+    output = output[0:(1-len(handle))]
+    output[-1].children.append(last)
+    return output
+
+
 def join(production, output, tag_handler):
     label = production[0].label
     handle = production[1]
-    joined_content = "".join([node.content for node in output[-len(handle):]])
+    content = []
+    for node in output[-len(handle):]:
+        try:
+            content.append(node.content_string())
+        except:
+            content.append(node.content)
+    joined_content = "".join(content)
     joined_end = output[-1].end
     output = output[0:(1-len(handle))]
     output[-1].label = label
@@ -218,7 +235,10 @@ def traverse_postfix(expr_node, action):
 
 
 def traverse_infix(expr_node, action):
-    return [(False, expr_node.children[0])]+[(True, action(expr_node))]+[(False, expr_node.children[1])]
+    out = []
+    for x in expr_node.children[0:-1]:
+        out += [(False, x), (True, action(expr_node))]
+    return out+[(False, expr_node.children[-1])]
 
 
 def traverse_group(expr_node, action):

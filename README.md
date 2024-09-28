@@ -4,8 +4,6 @@ This template repository contains the boilerplate code needed in order to create
 
 This version is specifically for python, however the ultimate goal is to make similar boilerplate repositories in any language, allowing tutors the freedom to code in what they feel most comfortable with.
 
-This comment has been added temporarily to test the testing.
-
 ## Table of Contents
 - [Evaluation Function Template Repository](#evaluation-function-template-repository)
   - [Table of Contents](#table-of-contents)
