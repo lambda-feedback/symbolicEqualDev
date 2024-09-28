@@ -34,7 +34,7 @@ def evaluation_function(response, answer, params, include_test_data=False) -> di
                 avg += end-start
             avg = avg/n
             results.append(f"Time for test {k}: {avg}")
-        return {"is_correct": True, "feedback": "<br>".join(results)}
+        return {"is_correct": True, "feedback": r"<br>".join(results)}
 
     eval_response = EvaluationResponse()
     eval_response.is_correct = False
