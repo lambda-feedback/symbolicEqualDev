@@ -16,10 +16,13 @@ def evaluation_function(response, answer, params, include_test_data=False) -> di
 
     if response.lower().startswith("benchmark"):
         arg = response.split()
+        n = 1
+        val = True
         if len(arg) > 1:
             n = int(arg[1])
-        else:
-            n = 1
+        if len(arg) > 2:
+            if arg[2].lower().startswith("f"):
+                val = False
         results = []
         for k, test in enumerate(benchmarks,1):
             avg = 0
@@ -34,7 +37,7 @@ def evaluation_function(response, answer, params, include_test_data=False) -> di
                 avg += end-start
             avg = avg/n
             results.append(f"Time for test {k}: {avg}")
-        return {"is_correct": True, "feedback": r"<br>".join(results)}
+        return {"is_correct": val, "feedback": r"<br>".join(results)}
 
     eval_response = EvaluationResponse()
     eval_response.is_correct = False
