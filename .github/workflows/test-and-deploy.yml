@@ -51,6 +51,10 @@ jobs:
         run: |
           pytest -v evaluation_tests.py::TestEvaluationFunction
 
+      - name: Test Preview Function
+        run: |
+          pytest -v preview_tests.py::TestPreviewFunction
+
   deploy-staging:
     name: Deploy Staging
     needs: test
