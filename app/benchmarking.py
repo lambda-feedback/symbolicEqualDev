@@ -37,11 +37,21 @@ benchmarks = [
         "params": {"strict_syntax": False}
     },
     {
-    "response": "log(2)/2+I*(3*pi/4 plus_minus 2*n*pi)",
-    "answer": "log(2)/2+I*(3*pi/4 plus_minus 2*n*pi)",
-    "params": {
-            "strict_syntax": False,
-            "elementary_functions": True,
-        }
-    }
+        "response": "log(2)/2+I*(3*pi/4 plus_minus 2*n*pi)",
+        "answer": "log(2)/2+I*(3*pi/4 plus_minus 2*n*pi)",
+        "params": {
+                "strict_syntax": False,
+                "elementary_functions": True,
+            }
+    },
+    {
+        "response": "6*cos(5*x+1)-90*x*sin(5*x+1)-225*x**2*cos(5*x+1)+125*x**3*sin(5*x+1)",
+        "answer": "6*cos(5*x+1)-90*x*sin(5*x+1)-225*x**2*cos(5*x+1)+125*x**3*sin(5*x+1)",
+        "params": {"strict_syntax": False}
+    },
+    {
+        "response": "-(sin(xy)y+(e^y))/(x(e^y+sin(xy)x))",
+        "answer": "-(y*sin(x*y) + e^(y)) / (x*(e^(y) + sin(x*y)))",
+        "params": {"strict_syntax": False}
+    },
 ]
