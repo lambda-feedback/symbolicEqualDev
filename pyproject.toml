@@ -17,7 +17,6 @@ lf_toolkit = { git = "https://github.com/lambda-feedback/toolkit-python.git", br
     "ipc",
 ] }
 pydot = "1.4.2"
-typing_extensions = "4.12.2"
 mpmath = "1.2.1"
 sympy = "1.10.1"
 antlr4-python3-runtime = "4.7.2"
