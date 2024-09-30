@@ -47,12 +47,12 @@ jobs:
 
       - name: Load cached venv
         id: dependencies-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ steps.python-setup.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
-      - name: Install dependencies
+      - name: Install python dependencies
         if: steps.dependencies-cache.outputs.cache-hit != 'true'
         run: |
           poetry install  --no-interaction --no-root
