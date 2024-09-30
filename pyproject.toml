@@ -18,9 +18,9 @@ lf_toolkit = { git = "https://github.com/lambda-feedback/toolkit-python.git", br
 ] }
 pydot = "1.4.2"
 mpmath = "1.2.1"
-sympy = "1.10.1"
+sympy = "1.12"
 antlr4-python3-runtime = "4.7.2"
-latex2sympy = { git = "https://github.com/lambda-feedback/latex2sympy", branch = "master" }
+latex2sympy2 = { git = "https://github.com/lambda-feedback/latex2sympy", branch = "master" }
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
