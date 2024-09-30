@@ -11,7 +11,7 @@ evaluation_function = "evaluation_function.main:main"
 evaluation_function_dev = "evaluation_function.dev:dev"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "3.10.15"
 typing_extensions = "^4.12.2"
 lf_toolkit = { git = "https://github.com/lambda-feedback/toolkit-python.git", branch = "main", extras = [
     "ipc",
@@ -21,6 +21,7 @@ mpmath = "1.2.1"
 sympy = "1.12"
 antlr4-python3-runtime = "4.7.2"
 latex2sympy2 = { git = "https://github.com/lambda-feedback/latex2sympy", branch = "master" }
+pytest = "^8.2.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
