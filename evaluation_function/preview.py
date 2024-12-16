@@ -34,10 +34,9 @@ def preview_function(response: str, params: Params) -> Result:
             latex_array_start = r"\\begin{array}{l}\n"
             latex_array_end = r"\n\\end{array}"
             latex_array_newline = r"\\\\\n"
-            if response.startswith(latex_array_start):
-                response = response.replace(latex_array_start, "")
-                response = response.replace(latex_array_end, "")
-                response = response.replace(latex_array_newline, " ")
+            response = response.replace(latex_array_start, "")
+            response = response.replace(latex_array_end, "")
+            response = response.replace(latex_array_newline, " ")
         result = Result(preview=Preview(latex=response_original, sympy=response))
         return result
 
