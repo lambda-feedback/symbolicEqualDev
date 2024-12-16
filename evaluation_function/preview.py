@@ -28,6 +28,19 @@ def preview_function(response: str, params: Params) -> Result:
     split into many) is entirely up to you.
     """
 
+    if params.get("text_prototype", False) is True:
+        response_original = response
+        if params.get("is_latex", False) is True:
+            latex_array_start = r"\\begin{array}{l}\n"
+            latex_array_end = r"\n\\end{array}"
+            latex_array_newline = r"\\\\\n"
+            if response.startswith(latex_array_start):
+                response = response.replace(latex_array_start, "")
+                response = response.replace(latex_array_end, "")
+                response = response.replace(latex_array_newline, " ")
+        result = {"is_correct": True, "response_latex": response_original, "response_simplified": response}
+        return result
+
     if params.get("physical_quantity", False):
         result = quantity_preview(response, params)
     else:
