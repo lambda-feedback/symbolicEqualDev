@@ -31,9 +31,9 @@ def preview_function(response: str, params: Params) -> Result:
     if params.get("text_prototype", False) is True:
         response_original = response
         if params.get("is_latex", False) is True:
-            latex_array_start = r"\begin{array}{l}\n"
-            latex_array_end = r"\n\end{array}"
-            latex_array_newline = r"\\\n"
+            latex_array_start = "\\begin{array}{l}\n"
+            latex_array_end = "\n\\end{array}"
+            latex_array_newline = "\\\\\n"
             response = response.replace(latex_array_start, "")
             response = response.replace(latex_array_end, "")
             response = response.replace(latex_array_newline, " ")

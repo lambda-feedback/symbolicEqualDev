@@ -42,7 +42,7 @@ class TestEvaluationFunction():
     #    assert result["is_correct"] is True
 
     def test_multiline_latex(self):
-        response = r"\\begin{array}{l}\na+b \\text { and more text }\\\\\n\\begin{array}{l}\nq+x \\\\\nc+d\n\\end{array}\n\\end{array}"
+        response = "\\begin{array}{l}\na+b \\text { and more text }\\\\\n\\begin{array}{l}\nq+x \\\\\nc+d\n\\end{array}\n\\end{array}"
         answer = "\\begin{array}{l}\na+b \\text { and more text }\\\\\n\\begin{array}{l}\nq+x \\\\\nc+d\n\\end{array}"
         params = {
             "strict_syntax": False,
