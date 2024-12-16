@@ -7,12 +7,20 @@ from .benchmarking import benchmarks
 from timeit import default_timer as timer
 
 def evaluation_function(response, answer, params, include_test_data=False) -> dict:
-    """
-    Function that allows for various types of comparison of various kinds of expressions.
-    Supported input parameters:
-    strict_SI_syntax:
-        - if set to True, use basic dimensional analysis functionality.
-    """
+
+    if params.get("text_prototype", False) is True:
+        response_original = response
+        if params.get("is_latex", False) is True:
+            latex_array_start = r"\\begin{array}{l}\n"
+            latex_array_end = r"\n\\end{array}"
+            latex_array_newline = r"\\\\\n"
+            if response.startswith(latex_array_start):
+                response = response.replace(latex_array_start, "")
+                response = response.replace(latex_array_end, "")
+                response = response.replace(latex_array_newline, " ")
+        result = {"is_correct": True, "response_latex": response_original, "response_simplified": response}
+        print(result)
+        return result
 
     if response.lower().startswith("benchmark"):
         arg = response.split()
