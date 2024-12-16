@@ -9,7 +9,8 @@ from timeit import default_timer as timer
 def evaluation_function(response, answer, params, include_test_data=False) -> dict:
 
     if params.get("text_prototype", False) is True:
-        return preview_function(response, params)
+        preview = preview_function(response, params)['preview']
+        return {"is_correct": True, "response_latex": preview['latex'], "response_simplified": preview['sympy']}
 
     if response.lower().startswith("benchmark"):
         arg = response.split()
