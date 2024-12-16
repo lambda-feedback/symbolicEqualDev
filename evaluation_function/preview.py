@@ -38,7 +38,7 @@ def preview_function(response: str, params: Params) -> Result:
                 response = response.replace(latex_array_start, "")
                 response = response.replace(latex_array_end, "")
                 response = response.replace(latex_array_newline, " ")
-        result = {"is_correct": True, "response_latex": response_original, "response_simplified": response}
+        result = Result(preview=Preview(latex=response_original, sympy=response))
         return result
 
     if params.get("physical_quantity", False):
