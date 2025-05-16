@@ -1,60 +1,37 @@
-# Base image that bundles AWS Lambda Python 3.8 image with some middleware functions
-# FROM base-eval-tmp
-FROM rabidsheep55/python-base-eval-layer
+FROM ghcr.io/lambda-feedback/evaluation-function-base/python:3.12 AS builder
 
-RUN yum install -y git
+RUN pip install poetry==1.8.3
 
-WORKDIR /app
+ENV POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=1 \
+    POETRY_VIRTUALENVS_CREATE=1 \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
 
-# Copy and install any packages/modules needed for your evaluation script.
-COPY requirements.txt .
-RUN pip3 install -r requirements.txt
+COPY pyproject.toml poetry.lock ./
 
-# Copy main scripts
-COPY evaluation.py ./app/
-COPY evaluation_tests.py ./app/
-COPY preview.py ./app/
-COPY preview_tests.py ./app/
+RUN --mount=type=cache,target=$POETRY_CACHE_DIR \
+    poetry install --without dev --no-root
 
-# Copy contexts
-COPY context/physical_quantity.py ./app/context/
-COPY context/symbolic.py ./app/context/
+FROM ghcr.io/lambda-feedback/evaluation-function-base/python:3.12
 
-# Copy feedback messages
-COPY feedback/physical_quantity.py ./app/feedback/
-COPY feedback/symbolic.py ./app/feedback/
+ENV VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH"
 
-# Copy preview implementations
-COPY preview_implementations/physical_quantity_preview.py ./app/preview_implementations/
-COPY preview_implementations/symbolic_preview.py ./app/preview_implementations/
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
-# Copy tests
-COPY tests/example_tests.py ./app/tests/
-COPY tests/physical_quantity_evaluation_tests.py ./app/tests/
-COPY tests/physical_quantity_preview_tests.py ./app/tests/
-COPY tests/slr_quantity_tests.py ./app/tests/
-COPY tests/symbolic_evaluation_tests.py ./app/tests/
-COPY tests/symbolic_preview_tests.py ./app/tests/
+# Precompile python files for faster startup
+RUN python -m compileall -q .
 
-# Copy utility code
-COPY utility/criteria_graph_utilities.py ./app/utility/
-COPY utility/criteria_parsing.py ./app/utility/
-COPY utility/evaluation_result_utilities.py ./app/utility/
-COPY utility/expression_utilities.py ./app/utility/
-COPY utility/physical_quantity_utilities.py ./app/utility/
-COPY utility/preview_utilities.py ./app/utility/
-COPY utility/slr_parsing_utilities.py ./app/utility/
-COPY utility/syntactical_comparison_utilities.py ./app/utility/
-COPY utility/unit_system_conversions.py ./app/utility/
+# Copy the evaluation function to the app directory
+COPY evaluation_function ./evaluation_function
 
-# Copy Documentation
-COPY docs/dev.md ./app/docs/dev.md
-COPY docs/user.md ./app/docs/user.md
-COPY docs/quantity_comparison_graph.svg ./app/docs/quantity_comparison_graph.svg
+# Command to start the evaluation function with
+ENV FUNCTION_COMMAND="python"
 
-# Set permissions so files and directories can be accessed on AWS
-RUN chmod 644 $(find . -type f)
-RUN chmod 755 $(find . -type d)
+# Args to start the evaluation function with
+ENV FUNCTION_ARGS="-m,evaluation_function.main"
 
-# The entrypoint for AWS is to invoke the handler function within the app package
-CMD [ "/app/app.handler" ]
+# The transport to use for the RPC server
+ENV FUNCTION_RPC_TRANSPORT="ipc"
+
+ENV LOG_LEVEL="debug"
