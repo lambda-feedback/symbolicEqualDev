@@ -1,238 +1,96 @@
-# Python Evaluation Function
+# Evaluation Function Template Repository
 
-This repository contains the boilerplate code needed to create a containerized evaluation function written in Python.
+This template repository contains the boilerplate code needed in order to create an AWS Lambda function that can be written by any tutor to grade a response area in any way they like.
 
-## Quickstart
+This version is specifically for python, however the ultimate goal is to make similar boilerplate repositories in any language, allowing tutors the freedom to code in what they feel most comfortable with.
 
-This chapter helps you to quickly set up a new Python evaluation function using this template repository.
+## Table of Contents
+- [Evaluation Function Template Repository](#evaluation-function-template-repository)
+  - [Table of Contents](#table-of-contents)
+  - [Repository Structure](#repository-structure)
+  - [Usage](#usage)
+    - [Getting Started](#getting-started)
+  - [How it works](#how-it-works)
+    - [Docker & Amazon Web Services (AWS)](#docker--amazon-web-services-aws)
+    - [Middleware Functions](#middleware-functions)
+    - [GitHub Actions](#github-actions)
+  - [Pre-requisites](#pre-requisites)
+  - [Contact](#contact)
 
-> [!NOTE]
-> After setting up the evaluation function, delete this chapter from the `README.md` file, and add your own documentation.
-
-#### 1. Create a new repository
-
-- In GitHub, choose `Use this template` > `Create a new repository` in the repository toolbar.
-
-- Choose the owner, and pick a name for the new repository.
-
-  > [!IMPORTANT]
-  > If you want to deploy the evaluation function to Lambda Feedback, make sure to choose the Lambda Feedback organization as the owner.
-
-- Set the visibility to `Public` or `Private`.
-
-  > [!IMPORTANT]
-  > If you want to use GitHub [deployment protection rules](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment#deployment-protection-rules), make sure to set the visibility to `Public`.
-
-- Click on `Create repository`.
-
-#### 2. Clone the new repository
-
-Clone the new repository to your local machine using the following command:
+## Repository Structure
 
 ```bash
-git clone <repository-url>
+app/
+    __init__.py
+    evaluation.py # Script containing the main evaluation_function
+    docs.md # Documentation page for this function (required)
+    evaluation_tests.py # Unittests for the main evaluation_function
+    requirements.txt # list of packages needed for algorithm.py
+    Dockerfile # for building whole image to deploy to AWS
+
+.github/
+    workflows/
+        test-and-deploy.yml # Testing and deployment pipeline
+
+config.json # Specify the name of the evaluation function in this file
+.gitignore
 ```
-
-#### 3. Configure the evaluation function
-
-When deploying to Lambda Feedback, set the evaluation function name in the `config.json` file. Read the [Deploy to Lambda Feedback](#deploy-to-lambda-feedback) section for more information.
-
-#### 4. Develop the evaluation function
-
-You're ready to start developing your evaluation function. Head over to the [Development](#development) section to learn more.
-
-#### 5. Update the README
-
-In the `README.md` file, change the title and description so it fits the purpose of your evaluation function.
-
-Also, don't forget to delete the Quickstart chapter from the `README.md` file after you've completed these steps.
 
 ## Usage
 
-You can run the evaluation function either using [the pre-built Docker image](#run-the-docker-image) or build and run [the binary executable](#build-and-run-the-binary).
+### Getting Started
 
-### Run the Docker Image
+1. Clone this repository
+2. Change the name of the evaluation function in `config.json`
+3. The name must be unique. To view existing grading functions, go to:
 
-The pre-built Docker image comes with [Shimmy](https://github.com/lambda-feedback/shimmy) installed.
+   - [Staging API Gateway Integrations](https://eu-west-2.console.aws.amazon.com/apigateway/main/develop/integrations/attach?api=c1o0u8se7b&region=eu-west-2&routes=0xsoy4q)
+   - [Production API Gateway Integrations](https://eu-west-2.console.aws.amazon.com/apigateway/main/develop/integrations/attach?api=cttolq2oph&integration=qpbgva8&region=eu-west-2&routes=0xsoy4q)
 
-> [!TIP]
-> Shimmy is a small application that listens for incoming HTTP requests, validates the incoming data and forwards it to the underlying evaluation function. Learn more about Shimmy in the [Documentation](https://github.com/lambda-feedback/shimmy).
+4. Merge commits into the default branch
+   - This will trigger the `test-and-deploy.yml` workflow, which will build the docker image, push it to a shared ECR repository, then call the backend `grading-function/ensure` route to build the necessary infrastructure to make the function available from the client app.
 
-The pre-built Docker image is available on the GitHub Container Registry. You can run the image using the following command:
+5. You are now ready to start developing your function:
+   
+   - Edit the `app/evaluation.py` file, which ultimately gets called when the function is given the `eval` command
+   - Edit the `app/evaluation_tests.py` file to add tests which get run:
+       - Every time you commit to this repo, before the image is built and deployed 
+       - Whenever the `healthcheck` command is supplied to the deployed function
+   - Edit the `app/docs.md` file to reflect your changes. This file is baked into the function's image, and is made available using the `docs` command. This feature is used to display this function's documentation on our [Documentation](https://lambda-feedback.github.io/Documentation/) website once it's been hooked up!
 
-```bash
-docker run -p 8080:8080 ghcr.io/lambda-feedback/evaluation-function-boilerplate-python:latest
-```
+---
 
-### Run the Script
+## How it works
 
-You can choose between running the Python evaluation function itself, ore using Shimmy to run the function.
+The function is built on top of a custom base layer, [BaseEvaluationFunctionLayer](https://github.com/lambda-feedback/BaseEvalutionFunctionLayer), which tools, tests and schema checking relevant to all evaluation functions.
 
-**Raw Mode**
+### Docker & Amazon Web Services (AWS)
 
-Use the following command to run the evaluation function directly:
+The grading scripts are hosted AWS Lambda, using containers to run a docker image of the app. Docker is a popular tool in software development that allows programs to be hosted on any machine by bundling all its requirements and dependencies into a single file called an **image**.
 
-```bash
-python -m evaluation_function.main
-```
+Images are run within **containers** on AWS, which give us a lot of flexibility over what programming language and packages/libraries can be used. For more information on Docker, read this [introduction to containerisation](https://www.freecodecamp.org/news/a-beginner-friendly-introduction-to-containers-vms-and-docker-79a9e3e119b/). To learn more about AWS Lambda, click [here](https://geekflare.com/aws-lambda-for-beginners/).
 
-This will run the evaluation function using the input data from `request.json` and write the output to `response.json`.
+### Middleware Functions
+In order to run the algorithm and schema on AWS Lambda, some middleware functions have been provided to handle, validate and return the data so all you need to worry about is the evaluation script and testing.
 
-**Shimmy**
+The code needed to build the image using all the middleware functions are available in the [BaseEvaluationFunctionLayer](https://github.com/lambda-feedback/BaseEvalutionFunctionLayer) repository.
 
-To have a more user-friendly experience, you can use [Shimmy](https://github.com/lambda-feedback/shimmy) to run the evaluation function.
+### GitHub Actions
+Whenever a commit is made to the GitHub repository, the new code will go through a pipeline, where it will be tested for syntax errors and code coverage. The pipeline used is called **GitHub Actions** and the scripts for these can be found in `.github/workflows/`.
 
-To run the evaluation function using Shimmy, use the following command:
+On top of that, when starting a new evaluation function, you will have to complete a set of unit test scripts, which not only make sure your code is reliable, but also helps you to build a _specification_ for how the code should function before you start programming.
 
-```bash
-shimmy -c "python" -a "-m" -a "evaluation_function.main" -i ipc
-```
+Once the code passes all these tests, it will then be uploaded to AWS and will be deployed and ready to go in only a few minutes.
 
-## Development
+## Pre-requisites
+Although all programming can be done through the GitHub interface, it is recommended you do this locally on your machine. To do this, you must have installed:
 
-### Prerequisites
+- Python 3.8 or higher.
 
-- [Docker](https://docs.docker.com/get-docker/)
-- [Python](https://www.python.org)
+- GitHub Desktop or the `git` CLI.
 
-### Repository Structure
+- A code editor such as Atom, VS Code, or Sublime.
 
-```bash
-.github/workflows/
-    build.yml                           # builds the public evaluation function image
-    deploy.yml                          # deploys the evaluation function to Lambda Feedback
+Copy this template over by clicking **Use this template** button found in the repository on GitHub. Save it to the `lambda-feedback` Organisation.
 
-evaluation_function/main.py             # evaluation function entrypoint
-evaluation_function/evaluation.py       # evaluation function implementation
-evaluation_function/evaluation_test.py  # evaluation function tests
-evaluation_function/preview.py          # evaluation function preview
-evaluation_function/preview_test.py     # evaluation function preview tests
-
-config.json                             # evaluation function deployment configuration file
-```
-
-### Development Workflow
-
-In its most basic form, the development workflow consists of writing the evaluation function in the `evaluation_function.wl` file and testing it locally. As long as the evaluation function adheres to the Evaluation Function API, a development workflow which incorporates using Shimmy is not necessary.
-
-Testing the evaluation function can be done by running the `dev.py` script using the Python interpreter like so:
-
-```bash
-python -m evaluation_function.dev <response> <answer>
-```
-
-> [!NOTE]
-> Specify the `response` and `answer` as command-line arguments.
-
-### Building the Docker Image
-
-To build the Docker image, run the following command:
-
-```bash
-docker build -t my-python-evaluation-function .
-```
-
-### Running the Docker Image
-
-To run the Docker image, use the following command:
-
-```bash
-docker run -it --rm -p 8080:8080 my-python-evaluation-function
-```
-
-This will start the evaluation function and expose it on port `8080`.
-
-## Deployment
-
-This section guides you through the deployment process of the evaluation function. If you want to deploy the evaluation function to Lambda Feedback, follow the steps in the [Lambda Feedback](#deploy-to-lambda-feedback) section. Otherwise, you can deploy the evaluation function to other platforms using the [Other Platforms](#deploy-to-other-platforms) section.
-
-### Deploy to Lambda Feedback
-
-Deploying the evaluation function to Lambda Feedback is simple and straightforward, as long as the repository is within the [Lambda Feedback organization](https://github.com/lambda-feedback).
-
-After configuring the repository, a [GitHub Actions workflow](.github/workflows/deploy.yml) will automatically build and deploy the evaluation function to Lambda Feedback as soon as changes are pushed to the main branch of the repository.
-
-**Configuration**
-
-The deployment configuration is stored in the `config.json` file. Choose a unique name for the evaluation function and set the `EvaluationFunctionName` field in [`config.json`](config.json).
-
-> [!IMPORTANT]
-> The evaluation function name must be unique within the Lambda Feedback organization, and must be in `lowerCamelCase`. You can find a example configuration below:
-
-```json
-{
-  "EvaluationFunctionName": "compareStringsWithPython"
-}
-```
-
-### Deploy to other Platforms
-
-If you want to deploy the evaluation function to other platforms, you can use the Docker image to deploy the evaluation function.
-
-Please refer to the deployment documentation of the platform you want to deploy the evaluation function to.
-
-If you need help with the deployment, feel free to reach out to the Lambda Feedback team by creating an issue in the template repository.
-
-## FAQ
-
-### Pull Changes from the Template Repository
-
-If you want to pull changes from the template repository to your repository, follow these steps:
-
-1. Add the template repository as a remote:
-
-```bash
-git remote add template https://github.com/lambda-feedback/evaluation-function-boilerplate-python.git
-```
-
-2. Fetch changes from all remotes:
-
-```bash
-git fetch --all
-```
-
-3. Merge changes from the template repository:
-
-```bash
-git merge template/main --allow-unrelated-histories
-```
-
-> [!WARNING]
-> Make sure to resolve any conflicts and keep the changes you want to keep.
-
-## Troubleshooting
-
-### Containerized Evaluation Function Fails to Start
-
-If your evaluation function is working fine when run locally, but not when containerized, there is much more to consider. Here are some common issues and solution approaches:
-
-**Run-time dependencies**
-
-Make sure that all run-time dependencies are installed in the Docker image.
-
-- Python packages: Make sure to add the dependency to the `pyproject.toml` file, and run `poetry install` in the Dockerfile.
-- System packages: If you need to install system packages, add the installation command to the Dockerfile.
-- ML models: If your evaluation function depends on ML models, make sure to include them in the Docker image.
-- Data files: If your evaluation function depends on data files, make sure to include them in the Docker image.
-
-**Architecture**
-
-Some package may not be compatible with the architecture of the Docker image. Make sure to use the correct platform when building and running the Docker image.
-
-E.g. to build a Docker image for the `linux/x86_64` platform, use the following command:
-
-```bash
-docker build --platform=linux/x86_64 .
-```
-
-**Verify Standalone Execution**
-
-If requests are timing out, it might be due to the evaluation function not being able to run. Make sure that the evaluation function can be run as a standalone script. This will help you to identify issues that are specific to the containerized environment.
-
-To run just the evaluation function as a standalone script, without using Shimmy, use the following command:
-
-```bash
-docker run -it --rm my-python-evaluation-function python -m evaluation_function.main
-```
-
-If the command starts without any errors, the evaluation function is working correctly. If not, you will see the error message in the console.
+## Contact
