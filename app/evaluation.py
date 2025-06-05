@@ -55,7 +55,7 @@ def determine_context(parameters):
             input_symbols_reserved_codes.append(input_symbol[0])
             input_symbols_reserved_aliases += [ip for ip in input_symbol[1] if len(ip.strip()) > 0]
 
-    reserved_keywords_codes = {"where", "written as"}
+    reserved_keywords_codes = {"where", "written as", "contains", "proportional to"}
     reserved_keywords_aliases = {"plus_minus", "minus_plus"}
     for re in parameters["reserved_expressions_strings"].values():
         reserved_keywords_aliases = reserved_keywords_aliases.union(set(re.keys()))
@@ -205,6 +205,7 @@ def generate_feedback(main_criteria, criteria_graphs, evaluation_parameters):
     response = evaluation_parameters["reserved_expressions"]["response"]
     criteria_feedback = set()
     is_correct = True
+    custom_feedback = evaluation_parameters.get("custom_feedback",{})
     for (criterion_identifier, graph) in criteria_graphs.items():
         # TODO: Find better way to identify main criteria for criteria graph
         main_criteria = criterion_identifier+"_TRUE"
@@ -219,7 +220,7 @@ def generate_feedback(main_criteria, criteria_graphs, evaluation_parameters):
         #       assumption that some way to return partial feedback
         #       before script has executed completely will be available
         #       in the future
-        evaluation_result.add_feedback_from_tags(criteria_feedback, graph)
+        evaluation_result.add_feedback_from_tags(criteria_feedback, graph, custom_feedback=custom_feedback)
     evaluation_result.is_correct = is_correct
     return
 
@@ -238,12 +239,6 @@ def evaluation_function(response, answer, params, include_test_data=False) -> di
     symbolic_comparison_internal_messages = symbolic_feedback_string_generators["INTERNAL"]
 
     parameters = deepcopy(params)
-
-    # CONSIDER: Can this be moved into the preprocessing procedures in a consistent way?
-    # Can it be turned into its own context? Or moved into the determine_context procedure?
-    # What solution will be most consistently reusable?
-    if parameters.get("is_latex", False):
-        response = parse_latex(response, parameters.get("symbols", {}), False)
 
     reserved_expressions_strings = {
         "learner": {
@@ -269,12 +264,30 @@ def evaluation_function(response, answer, params, include_test_data=False) -> di
     else:
         evaluation_result.latex = preview["latex"]
         evaluation_result.simplified = preview["sympy"]
+
+    reserved_expressions_keys = list(reserved_expressions_strings["learner"].keys())+list(reserved_expressions_strings["task"].keys())
     parameters.update(
         {
             "context": context,
-            "parsing_parameters": context["parsing_parameters_generator"](parameters),
+            "reserved_keywords": context["reserved_keywords"]+reserved_expressions_keys,
         }
     )
+    parsing_parameters = context["parsing_parameters_generator"](parameters, unsplittable_symbols=reserved_expressions_keys) 
+    parameters.update(
+        {
+            "parsing_parameters": parsing_parameters,
+        }
+    )
+
+    # CONSIDER: Can this be moved into the preprocessing procedures in a consistent way?
+    # Can it be turned into its own context? Or moved into the determine_context procedure?
+    # What solution will be most consistently reusable?
+    if parameters.get("is_latex", False):
+        parameters["reserved_expressions_strings"]["learner"].update(
+            {
+                "response": parse_latex(response, parameters.get("symbols", {}), False, parameters=parameters),
+            }
+        )
 
     # FIXME: Move this into expression_utilities
     if params.get("strict_syntax", True):
@@ -287,12 +300,9 @@ def evaluation_function(response, answer, params, include_test_data=False) -> di
     if reserved_expressions_success is False:
         return evaluation_result.serialise(include_test_data)
     reserved_expressions_parsed = {**reserved_expressions["learner"], **reserved_expressions["task"]}
-    parameters.update({"reserved_keywords": parameters["context"]["reserved_keywords"]+list(reserved_expressions_parsed.keys())})
 
     criteria_parser = context["generate_criteria_parser"](reserved_expressions)
     criteria = create_criteria_dict(criteria_parser, parameters)
-
-    parsing_parameters = parameters["context"]["parsing_parameters_generator"](parameters, unsplittable_symbols=list(reserved_expressions_parsed.keys()))
 
     evaluation_parameters = FrozenValuesDictionary(
         {
@@ -308,6 +318,7 @@ def evaluation_function(response, answer, params, include_test_data=False) -> di
             "numerical": parameters.get("numerical", False),
             "atol": parameters.get("atol", 0),
             "rtol": parameters.get("rtol", 0),
+            "custom_feedback": parameters.get("custom_feedback",{}),
         }
     )
 
