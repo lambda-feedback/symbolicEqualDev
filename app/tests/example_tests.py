@@ -507,6 +507,142 @@ class TestEvaluationFunction():
         assert result["is_correct"] is value
         assert set(feedback_tags) == set(result["tags"])
 
+    @pytest.mark.parametrize(
+        "response, value, tags",
+        [
+            (
+                "2a+2b+2c",
+                True,
+                [
+                    "response proportional to answer_TRUE",
+                ],
+            ),
+            (
+                "a+2b+3c",
+                False,
+                [
+                    "response proportional to answer_FALSE",
+                ],
+            ),
+            (
+                "pi*(a+b+c)",
+                True,
+                [
+                    "response proportional to answer_TRUE",
+                ],
+            ),
+            (
+                "x*(a+b+c)",
+                False,
+                [
+                    "response proportional to answer_FALSE",
+                ],
+            ),
+        ]
+    )
+    def test_custom_comparison_with_criteria_proportional(self, response, value, tags):
+        params = {
+            "strict_syntax": False,
+            "elementary_functions": True,
+            "criteria": "response proportional to answer",
+        }
+        answer = "a+b+c"
+        result = evaluation_function(response, answer, params, include_test_data=True)
+        assert result["is_correct"] is value
+        assert set(tags) == set(result["tags"])
+
+    @pytest.mark.parametrize(
+        "response, value, tags",
+        [
+            (
+                "2*x^2+0.5+0.25*sin(x)^2",
+                False,
+                [
+                    "answer <= response_TRUE",
+                    "2+answer > response_UNKNOWN",
+                ]
+            ),
+        ]
+    )
+    def test_custom_comparison_with_criteria_order(self, response, value, tags):
+        params = {
+            "strict_syntax": False,
+            "elementary_functions": True,
+            "criteria": "answer <= response, 2+answer > response",
+            "symbol_assumptions": "('x', 'real')",
+        }
+        answer = "2*x^2"
+        result = evaluation_function(response, answer, params, include_test_data=True)
+        assert result["is_correct"] is value
+        assert set(tags) == set(result["tags"])
+
+    @pytest.mark.parametrize(
+        "response, value, tags",
+        [
+            (
+                "pi*n",
+                True,
+                [
+                    "sin(response)=0_TRUE",
+                    "sin(response)=0_SAME_SYMBOLS_TRUE",
+                    "response contains n_TRUE",
+                ],
+            ),
+        ]
+    )
+    def test_custom_comparison_with_criteria_contains(self, response, value, tags):
+        params = {
+            "strict_syntax": False,
+            "elementary_functions": True,
+            "criteria": "sin(response)=0, response contains n",
+            "symbols": {
+                "n": {
+                    "latex": r"\(n\)",
+                    "aliases": ["i", "k", "N", "I", "K"],
+                },
+            },
+            "symbol_assumptions": "('n', 'integer')"
+        }
+        answer = "0"
+        result = evaluation_function(response, answer, params, include_test_data=True)
+        assert result["is_correct"] is value
+        assert set(tags) == set(result["tags"])
+
+    @pytest.mark.parametrize(
+        "response, answer, criteria, value, feedback_tags, custom_feedback, additional_params",
+        [
+            (
+                "2*x^2+0.5+0.25*sin(x)^2",
+                "2x^2",
+                "answer <= response, 2+answer > response",
+                False,
+                [
+                    "answer <= response_TRUE",
+                    "2+answer > response_UNKNOWN",
+                ],
+                {
+                    "answer <= response_TRUE": "AAA",
+                    "2+answer > response_UNKNOWN": "BBB",
+                },
+                {
+                    "symbol_assumptions": "('x', 'real')",
+                }
+            ),
+        ]
+    )
+    def test_criteria_custom_feedback(self, response, answer, criteria, value, feedback_tags, custom_feedback, additional_params):
+        params = {
+            "strict_syntax": False,
+            "elementary_functions": True,
+            "criteria": criteria,
+            "custom_feedback": custom_feedback,
+        }
+        params.update(additional_params)
+        result = evaluation_function(response, answer, params, include_test_data=True)
+        assert result["is_correct"] is value
+        assert set(feedback_tags) == set(result["tags"])
+        for string in custom_feedback.values():
+            assert string in result["feedback"]
 
 if __name__ == "__main__":
     pytest.main(['-sk not slow', "--tb=line", os.path.abspath(__file__)])

@@ -40,6 +40,8 @@ def check_criterion(criterion, parameters_dict, generate_feedback=True):
         result = check_order(criterion, parameters_dict)
     elif label == "CONTAINS":
         result = check_contains_symbol(criterion, parameters_dict)
+    elif label == "PROPORTIONAL_TO":
+        result = check_proportionality(criterion, parameters_dict)
     elif label == "WHERE":
         crit = criterion.children[0]
         subs = criterion.children[1]
@@ -90,7 +92,10 @@ def do_comparison(comparison_symbol, expression):
         "<=": lambda expr: bool(expression.cancel().simplify().simplify() <= 0),
     }
     comparison = comparisons[comparison_symbol.strip()]
-    result = comparison(expression)
+    try:
+        result = comparison(expression)
+    except Exception:
+        result = None
     return result
 
 
@@ -143,6 +148,20 @@ def check_equality(criterion, parameters_dict, local_substitutions=[]):
 def check_order(criterion, parameters_dict, local_substitutions=[]):
     lhs_expr, rhs_expr = create_expressions_for_comparison(criterion, parameters_dict, local_substitutions)
     result = do_comparison(criterion.content, lhs_expr-rhs_expr)
+    return result
+
+
+def check_proportionality(criterion, parameters_dict, local_substitutions=[]):
+    lhs_expr, rhs_expr = create_expressions_for_comparison(criterion, parameters_dict, local_substitutions)
+    result = None
+    if lhs_expr.cancel().simplify().simplify() != 0:
+        result = (rhs_expr/lhs_expr).cancel().simplify()
+    elif rhs_expr.cancel().simplify().simplify() != 0:
+        result = (lhs_expr/rhs_expr).cancel().simplify()
+    if result == 0 or result is None:
+        result = False
+    else:
+        result = result.is_constant()
     return result
 
 
@@ -218,9 +237,13 @@ def criterion_equality_node(criterion, parameters_dict, label=None):
             return {
                 label+"_TRUE": None
             }
-        else:
+        elif result is False:
             return {
                 label+"_FALSE": None
+            }
+        else:
+            return {
+                label+"_UNKNOWN": None
             }
 
     def set_equivalence(unused_input):
@@ -328,7 +351,7 @@ def criterion_equality_node(criterion, parameters_dict, label=None):
     ans = parameters_dict["reserved_expressions"]["answer"]
     use_equality_equivalence = isinstance(res, Equality) or isinstance(ans, Equality)
 
-    # TODO: Make checking set quivalence its own context that calls symbolic comparisons instead
+    # TODO: Make checking set equivalence its own context that calls symbolic comparisons instead
     if use_set_equivalence is True:
         graph.add_evaluation_node(
             label,
@@ -718,14 +741,19 @@ def criterion_eval_node(criterion, parameters_dict, generate_feedback=True):
     def evaluation_node_internal(unused_input):
         result = check_criterion(criterion, parameters_dict, generate_feedback)
         label = criterion.content_string()
-        if result:
+        if result is True:
             return {
                 label+"_TRUE": feedback_string_generator_inputs
             }
-        else:
+        elif result is False:
             return {
                 label+"_FALSE": feedback_string_generator_inputs
             }
+        else:
+            return {
+                label+"_UNKNOWN": feedback_string_generator_inputs
+            }
+
     label = criterion.content_string()
     graph = CriteriaGraph(label)
     END = CriteriaGraph.END
@@ -747,6 +775,14 @@ def criterion_eval_node(criterion, parameters_dict, generate_feedback=True):
         feedback_string_generator=symbolic_feedback_string_generators["GENERIC"]("FALSE")
     )
     graph.attach(label+"_FALSE", END.label)
+    graph.attach(
+        label,
+        label+"_UNKNOWN",
+        summary="True",
+        details=label+" is false.",
+        feedback_string_generator=symbolic_feedback_string_generators["GENERIC"]("FALSE")
+    )
+    graph.attach(label+"_UNKNOWN", END.label)
     return graph
 
 
