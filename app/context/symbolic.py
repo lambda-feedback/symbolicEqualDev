@@ -261,7 +261,12 @@ def criterion_equality_node(criterion, parameters_dict, label=None):
             result = None
             for j, answer in enumerate(answer_list):
                 current_pair = [("response", response), ("answer", answer)]
-                result = check_equality(criterion, parameters_dict, local_substitutions=current_pair)
+                if isinstance(response, Equality) and not isinstance(answer, Equality):
+                    result = False
+                elif not isinstance(response, Equality) and isinstance(answer, Equality):
+                    result = False
+                else:
+                    result = check_equality(criterion, parameters_dict, local_substitutions=current_pair)
                 if result is True:
                     matches["responses"][i] = True
                     matches["answers"][j] = True
