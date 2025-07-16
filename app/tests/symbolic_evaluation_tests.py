@@ -1892,7 +1892,7 @@ class TestEvaluationFunction():
         assert result["is_correct"] is True
 
 
-    def test_compatibility(self):
+    def test_response_for_which_correctness_cannot_be_determined(self):
         response = "2 pi e^{-a |omega|}"
         answer = "2 pi e^(-a|omega|)"
         params = {
