@@ -237,10 +237,10 @@ def protect_elementary_functions_substitutions(expr):
     alias_substitutions = []
     for (name, alias_list) in elementary_functions_names+special_symbols_names:
         if name in expr:
-            alias_substitutions += [(name, " "+name)]
+            alias_substitutions += [(name, " "+name+" ")]
         for alias in alias_list:
             if alias in expr:
-                alias_substitutions += [(alias, " "+name)]
+                alias_substitutions += [(alias, " "+name+" ")]
     return alias_substitutions
 
 

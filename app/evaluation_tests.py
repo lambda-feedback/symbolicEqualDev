@@ -23,7 +23,7 @@ class TestEvaluationFunction():
     """
 
     # Import tests that makes sure that mathematical expression comparison works as expected
-    #from .tests.symbolic_evaluation_tests import TestEvaluationFunction as TestSymbolicComparison
+    from .tests.symbolic_evaluation_tests import TestEvaluationFunction as TestSymbolicComparison
 
     # Import tests that makes sure that physical quantities are handled as expected
     #from .tests.physical_quantity_evaluation_tests import TestEvaluationFunction as TestQuantities

@@ -1881,5 +1881,15 @@ class TestEvaluationFunction():
         result = evaluation_function(response, answer, params)
         assert result["is_correct"] is False
 
+    def test_elementary_function_symbol_with_implicit_multiplication_on_both_sides(self):
+        response = "momega^3 l^2/2(exp(2omegat)-exp(-2omegat))"
+        answer = "m*omega^3*l^2*sinh(2*omega*t)"
+        params = {
+            'strict_syntax': False,
+            'elementary_functions': True,
+        }
+        result = evaluation_function(response, answer, params)
+        assert result["is_correct"] is True
+
 if __name__ == "__main__":
     pytest.main(['-xk not slow', "--tb=line", '--durations=10', os.path.abspath(__file__)])

@@ -102,6 +102,15 @@ def do_comparison(comparison_symbol, expression):
 def check_equality(criterion, parameters_dict, local_substitutions=[]):
     lhs_expr, rhs_expr = create_expressions_for_comparison(criterion, parameters_dict, local_substitutions)
     result = do_comparison(criterion.content, lhs_expr-rhs_expr)
+    # There are some types of expression, e.g. those containing hyperbolic trigonometric functions, that can behave
+    # unpredictably when simplification is applied. For that reason we check several different combinations of
+    # simplifications here in order to reduce the likelihood of false negatives.
+    if result is False:
+        result = do_comparison(criterion.content, lhs_expr-rhs_expr.simplify())
+    if result is False:
+        result = do_comparison(criterion.content, lhs_expr.simplify()-rhs_expr)
+    if result is False:
+        result = do_comparison(criterion.content, lhs_expr.simplify()-rhs_expr.simplify())
 
     # TODO: Make numerical comparison its own context
     if result is False:
