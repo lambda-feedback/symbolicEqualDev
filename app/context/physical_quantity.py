@@ -572,7 +572,9 @@ def feedback_string_generator(tags, graph, parameters_dict):
 def parsing_parameters_generator(params, unsplittable_symbols=tuple(), symbol_assumptions=tuple()):
     parsing_parameters = create_sympy_parsing_params(params)
     parsing_parameters.update({
-        "strictness": params.get("strictness", "natural")
+        "strictness": params.get("strictness", "natural"),
+        "rtol": params.get("rtol", 0),
+        "atol": params.get("atol", 0),
     })
     return parsing_parameters
 
