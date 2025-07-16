@@ -1891,5 +1891,19 @@ class TestEvaluationFunction():
         result = evaluation_function(response, answer, params)
         assert result["is_correct"] is True
 
+
+    def test_compatibility(self):
+        response = "2 pi e^{-a |omega|}"
+        answer = "2 pi e^(-a|omega|)"
+        params = {
+            'atol': 0,
+            'rtol': 0,
+            'strict_syntax': False,
+            'physical_quantity': False,
+            'elementary_functions': True,
+        }
+        result = evaluation_function(response, answer, params)
+        assert result["is_correct"] is False
+
 if __name__ == "__main__":
     pytest.main(['-xk not slow', "--tb=line", '--durations=10', os.path.abspath(__file__)])

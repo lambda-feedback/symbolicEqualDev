@@ -408,6 +408,14 @@ def criterion_equality_node(criterion, parameters_dict, label=None):
         )
         graph.attach(
             label,
+            label+"_UNKNOWN",
+            summary="Cannot determine if "+str(lhs)+" is equivalent to "+str(rhs),
+            details="Cannot determine if "+str(lhs)+" is equivalent to "+str(rhs)+".",
+            feedback_string_generator=symbolic_feedback_string_generators["INTERNAL"]("EQUALITY_EQUIVALENCE_UNKNOWN")
+        )
+        graph.attach(label+"_UNKNOWN", END.label)
+        graph.attach(
+            label,
             label+"_TRUE",
             summary=str(lhs)+" is equivalent to "+str(rhs),
             details=str(lhs)+" is equivalent to "+str(rhs)+".",
@@ -483,6 +491,14 @@ def criterion_equality_node(criterion, parameters_dict, label=None):
             feedback_string_generator=symbolic_feedback_string_generators["response=answer"]("FALSE")
         )
         graph.attach(label+"_FALSE", END.label)
+        graph.attach(
+            label,
+            label+"_UNKNOWN",
+            summary="Cannot detrmine if "+str(lhs)+"="+str(rhs),
+            details="Cannot detrmine if "+str(lhs)+" is equal to "+str(rhs)+".",
+            feedback_string_generator=symbolic_feedback_string_generators["response=answer"]("UNKNOWN")
+        )
+        graph.attach(label+"_UNKNOWN", END.label)
     return graph
 
 
