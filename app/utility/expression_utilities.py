@@ -390,7 +390,9 @@ def substitute(string, substitutions):
     Output:
         A string that is the input string where any occurence of the left element
         of each pair in substitutions have been replaced with the corresponding right element.
-        If the first element in the substitution is of the form (string,list of strings) then the substitution will only happen if the first element followed by one of the strings in the list in the second element.
+        If the first element in the substitution is of the form (string,list of strings) then
+        the substitution will only happen if the first element followed by one of the strings
+        in the list in the second element.
     Remarks:
         Substitutions are made in the input order but if a substitutions left element is a
         substring of a preceding substitutions right element there will be no substitution.
@@ -676,12 +678,14 @@ def parse_expression(expr_string, parsing_params):
     extra_transformations = parsing_params.get("extra_transformations", ())
     unsplittable_symbols = parsing_params.get("unsplittable_symbols", ())
     symbol_dict = parsing_params.get("symbol_dict", {})
-    separate_unsplittable_symbols = [(x, " "+x+" ") for x in unsplittable_symbols]
+    separate_unsplittable_symbols = [(x, " "+x) for x in unsplittable_symbols]
     substitutions = separate_unsplittable_symbols
 
     parsed_expr_set = set()
     for expr in expr_set:
         expr = preprocess_according_to_chosen_convention(expr, parsing_params)
+        substitutions = list(set(substitutions))
+        substitutions.sort(key=substitutions_sort_key)
         if parsing_params["elementary_functions"] is True:
             substitutions += protect_elementary_functions_substitutions(expr)
         substitutions = list(set(substitutions))
