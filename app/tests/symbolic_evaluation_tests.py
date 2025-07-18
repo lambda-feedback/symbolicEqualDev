@@ -1927,5 +1927,19 @@ class TestEvaluationFunction():
         result = evaluation_function(response, answer, params)
         assert result["is_correct"] is False
 
+    def test_equality_expression_mismatch_with_custom_criteria(self):
+        response = "x-0.883x^2=0.251X^3"
+        answer = "0.4842x-0.1163x^3"
+        params = {
+            'atol': 0,
+            'rtol': 0.03,
+            'criteria': 'response=answer where x=0, diff(response,x)=diff(answer,x) where x=0, diff(response,x,2)=diff(answer,x,2) where x=0, diff(response,x,3)=diff(answer,x,3) where x=0',
+            'strict_syntax': False,
+            'physical_quantity': False,
+            'elementary_functions': True,
+        }
+        result = evaluation_function(response, answer, params)
+        assert result["is_correct"] is False
+
 if __name__ == "__main__":
     pytest.main(['-xk not slow', "--tb=line", '--durations=10', os.path.abspath(__file__)])
