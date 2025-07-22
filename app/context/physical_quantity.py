@@ -279,12 +279,12 @@ def criterion_match_node(criterion, parameters, label=None):
             #       numerical tolerances can be applied appropriately
             if parsing_params.get('rtol', 0) > 0 or parsing_params.get('atol', 0) > 0:
                 if (lhs_string == 'answer' and rhs_string == 'response') or (lhs_string == 'response' and rhs_string == 'answer'):
-                    ans = parameters["reserved_expressions"]["answer"]["standard"]["value"]
-                    res = parameters["reserved_expressions"]["response"]["standard"]["value"]
+                    ans = parameters["reserved_expressions"]["answer"]["standard"]["value"].simplify()
+                    res = parameters["reserved_expressions"]["response"]["standard"]["value"].simplify()
                 if (ans is not None and ans.is_constant()) and (res is not None and res.is_constant()):
-                    if parsing_params.get('rtol', 0) > 0:
+                    if parsing_params.get('rtol', 0) > 0 and (ans != 0):
                         value_match = bool(abs(float((ans-res)/ans)) < parsing_params['rtol'])
-                    elif parsing_params.get('atol', 0) > 0:
+                    elif parsing_params.get('atol', 0) > 0 or (ans == 0):
                         value_match = bool(abs(float(ans-res)) < parsing_params['atol'])
 
         substitutions = [(key, expr["standard"]["unit"]) for (key, expr) in reserved_expressions]

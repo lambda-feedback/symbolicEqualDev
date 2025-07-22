@@ -373,5 +373,18 @@ class TestEvaluationFunction():
         result = evaluation_function(res, ans, params, include_test_data=True)
         assert result["is_correct"] is False
 
+    def test_compatibility(self):
+        ans = "0 m"
+        res = "1 m"
+        params = {
+            'rtol': 0,
+            'atol': 0,
+            'strict_syntax': False,
+            'physical_quantity': True,
+            'elementary_functions': True,
+        }
+        result = evaluation_function(res, ans, params, include_test_data=True)
+        assert result["is_correct"] is False
+
 if __name__ == "__main__":
     pytest.main(['-xk not slow', "--no-header", os.path.abspath(__file__)])
