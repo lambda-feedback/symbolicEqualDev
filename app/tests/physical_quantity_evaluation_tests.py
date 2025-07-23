@@ -373,7 +373,7 @@ class TestEvaluationFunction():
         result = evaluation_function(res, ans, params, include_test_data=True)
         assert result["is_correct"] is False
 
-    def test_compatibility(self):
+    def test_answer_zero_value(self):
         ans = "0 m"
         res = "1 m"
         params = {

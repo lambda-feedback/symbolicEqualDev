@@ -1941,5 +1941,24 @@ class TestEvaluationFunction():
         result = evaluation_function(response, answer, params)
         assert result["is_correct"] is False
 
+    def test_input_symbols_takes_priority_when_containing_elementary_function_names_as_substring(self):
+        response = "Vmax - Vmaxe^-(t/tau)"
+        answer = "Vmax*(1-exp(-t/tau))"
+        params = {
+            "atol": 0,
+            "rtol": 0,
+            "strict_syntax": False,
+            "elementary_functions": True,
+            "physical_quantity": False,
+            "symbols": {
+                "Vmax": {"aliases": ["V_max"], "latex": r"$V_{max}$"},
+                "RS": {"aliases": ["R_S", "rs"], "latex": r"$R_S$"},
+                "RF": {"aliases": ["R_F", "rf"], "latex": r"$R_f$"},
+                "tau": {"aliases": [], "latex": r"$\tau$"},
+            },
+        }
+        result = evaluation_function(response, answer, params)
+        assert result["is_correct"] is True
+
 if __name__ == "__main__":
     pytest.main(['-xk not slow', "--tb=line", '--durations=10', os.path.abspath(__file__)])
